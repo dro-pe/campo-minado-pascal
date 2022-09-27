@@ -36,8 +36,8 @@ begin
     for cont := 1 to num_minas do
     begin
         repeat
-            randi := round(random(c.num_lin-1)) + 1;       (* os numeros aleatorios gerados devem ser 1 <= n <= numero de linhas ou de colunas *)
-            randj := round(random(c.num_col-1)) + 1;
+            randi := round(random(c.num_lin)) + 1;       (* os numeros aleatorios gerados devem ser 1 <= n <= numero de linhas ou de colunas *)
+            randj := round(random(c.num_col)) + 1;
         until(c.tabuleiro[randi,randj].conteudo <> MINA);  (* o repeat evita que a mina seja colocada em uma casa onde ja havia uma mina (otimizar isso depois)*)
         c.tabuleiro[randi,randj].conteudo := MINA;
     end;
@@ -101,8 +101,8 @@ begin
     end;
 end;
 
-procedure le_jogada(x, y: integer;
-                    c   : campo_minado);
+procedure le_jogada(var x, y: integer;
+                    var c   : campo_minado);
 begin
     writeln('Digite as coordenadas da casa que voce quer abrir (numero da linha e depois numero da coluna):');
     read(x, y);
@@ -121,12 +121,33 @@ begin
     end;
 end;
 
-procedure executa_jogada(x, y: integer;
-                         c   : campo_minado);
-
+procedure executa_jogada(x, y : integer;
+                         var c: campo_minado);
 begin
-
+    if c.tabuleiro[x,y].conteudo = MINA then
+    begin
+        c.perdeu := true;
+        c.tabuleiro[x,y].aberta := true;
+    end
+    else if c.tabuleiro[x,y].conteudo <> NADA then
+    begin
+        c.falta_abrir := c.falta_abrir - 1;
+        c.tabuleiro[x,y].aberta := true;
+    end;
 end;
+
+// procedure debug_imprime_tudo(var c: campo_minado);
+// var i, j: integer;
+// begin
+//     for i := 1 to c.num_lin do
+//     begin
+//         for j := 1 to c.num_col do
+//         begin
+//             write(c.tabuleiro[i,j].conteudo,' ');
+//         end;
+//         writeln();
+//     end;    
+// end;
 
 var c   : campo_minado;
     x, y: integer;
@@ -134,14 +155,16 @@ begin
     randomize;
     inicia_campo(c);
     imprime_campo(c);
+    // debug_imprime_tudo(c);
     c.ganhou := false;
     c.perdeu := false;
 
     while not(c.ganhou OR c.perdeu) do
     begin
         le_jogada(x, y, c);
-    //     executa_jogada(x, y, c);
+        executa_jogada(x, y, c);
         imprime_campo(c);
+        // debug_imprime_tudo(c);
     end;
 
     if c.ganhou then
