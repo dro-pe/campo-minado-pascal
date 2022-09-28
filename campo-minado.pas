@@ -36,7 +36,7 @@ begin
     for cont := 1 to num_minas do
     begin
         repeat
-            randi := round(random(c.num_lin)) + 1;       (* os numeros aleatorios gerados devem ser 1 <= n <= numero de linhas ou de colunas *)
+            randi := round(random(c.num_lin)) + 1;         (* os numeros aleatorios gerados devem ser 1 <= n <= numero de linhas ou de colunas *)
             randj := round(random(c.num_col)) + 1;
         until(c.tabuleiro[randi,randj].conteudo <> MINA);  (* o repeat evita que a mina seja colocada em uma casa onde ja havia uma mina (otimizar isso depois)*)
         c.tabuleiro[randi,randj].conteudo := MINA;
@@ -50,7 +50,7 @@ begin
     conta_minas := 0;
     for i := -1 to 1 do
         for j := -1 to 1 do
-            if tab[lin + i,col + j].conteudo = MINA then
+            if tab[lin+i,col+j].conteudo = MINA then
                 conta_minas := conta_minas + 1;
 end;
 
@@ -81,11 +81,11 @@ begin
 end;
 
 procedure imprime_campo(var c: campo_minado);
-var i, j: longint;
+var i, j: integer;
 begin
-    for i := 1 to c.num_lin do
+    for i := 0 to c.num_lin+1 do
     begin
-        for j := 1 to c.num_col do
+        for j := 0 to c.num_col+1 do
         begin
             if not(c.tabuleiro[i,j].aberta) then
                 write('* ')
@@ -121,33 +121,48 @@ begin
     end;
 end;
 
+procedure abre_casa_vazia(x, y : integer;
+                          var c: campo_minado);
+var i, j: integer;
+begin
+    for i := -1 to 1 do
+        for j := -1 to 1 do
+        begin
+            if (c.tabuleiro[x+i,x+j].conteudo <> BORDA) AND not(c.tabuleiro[x+i,y+j].aberta)then
+            begin
+                c.tabuleiro[x+i,y+j].aberta := true;
+                c.falta_abrir := c.falta_abrir - 1;
+                if c.tabuleiro[x+i,y+j].conteudo = NADA then
+                    abre_casa_vazia(x+i, y+j, c);
+            end;
+        end;
+end;
+
 procedure executa_jogada(x, y : integer;
                          var c: campo_minado);
 begin
+    c.tabuleiro[x,y].aberta := true;
     if c.tabuleiro[x,y].conteudo = MINA then
-    begin
-        c.perdeu := true;
-        c.tabuleiro[x,y].aberta := true;
-    end
+        c.perdeu := true
     else if c.tabuleiro[x,y].conteudo <> NADA then
+        c.falta_abrir := c.falta_abrir - 1
+    else
     begin
         c.falta_abrir := c.falta_abrir - 1;
-        c.tabuleiro[x,y].aberta := true;
+        abre_casa_vazia(x, y, c);
     end;
 end;
 
-// procedure debug_imprime_tudo(var c: campo_minado);
-// var i, j: integer;
-// begin
-//     for i := 1 to c.num_lin do
-//     begin
-//         for j := 1 to c.num_col do
-//         begin
-//             write(c.tabuleiro[i,j].conteudo,' ');
-//         end;
-//         writeln();
-//     end;    
-// end;
+procedure debug_imprime_tudo(var c: campo_minado);
+var i, j: integer;
+begin
+    for i := 1 to c.num_lin do
+    begin
+        for j := 1 to c.num_col do
+            write(c.tabuleiro[i,j].conteudo,' ');
+        writeln();
+    end;    
+end;
 
 var c   : campo_minado;
     x, y: integer;
@@ -155,20 +170,21 @@ begin
     randomize;
     inicia_campo(c);
     imprime_campo(c);
-    // debug_imprime_tudo(c);
-    c.ganhou := false;
+    debug_imprime_tudo(c);
+    writeln('debug: falta abrir ',c.falta_abrir);
     c.perdeu := false;
 
-    while not(c.ganhou OR c.perdeu) do
+    while not((c.falta_abrir = 0) OR c.perdeu) do
     begin
         le_jogada(x, y, c);
         executa_jogada(x, y, c);
         imprime_campo(c);
-        // debug_imprime_tudo(c);
+        debug_imprime_tudo(c);
+        writeln('debug: falta abrir ',c.falta_abrir);
     end;
 
-    if c.ganhou then
-        writeln('Parabens, voce ganhou!')
+    if c.perdeu then
+        writeln('MINA! Fim de jogo.')
     else
-        writeln('MINA! Fim de jogo.');
+        writeln('Parabens, voce ganhou!');
 end.
