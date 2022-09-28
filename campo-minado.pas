@@ -83,9 +83,9 @@ end;
 procedure imprime_campo(var c: campo_minado);
 var i, j: integer;
 begin
-    for i := 0 to c.num_lin+1 do
+    for i := 1 to c.num_lin do
     begin
-        for j := 0 to c.num_col+1 do
+        for j := 1 to c.num_col do
         begin
             if not(c.tabuleiro[i,j].aberta) then
                 write('* ')
@@ -127,15 +127,13 @@ var i, j: integer;
 begin
     for i := -1 to 1 do
         for j := -1 to 1 do
-        begin
-            if (c.tabuleiro[x+i,x+j].conteudo <> BORDA) AND not(c.tabuleiro[x+i,y+j].aberta)then
+            if (c.tabuleiro[x+i,y+j].conteudo <> BORDA) AND not(c.tabuleiro[x+i,y+j].aberta)then
             begin
                 c.tabuleiro[x+i,y+j].aberta := true;
                 c.falta_abrir := c.falta_abrir - 1;
                 if c.tabuleiro[x+i,y+j].conteudo = NADA then
                     abre_casa_vazia(x+i, y+j, c);
             end;
-        end;
 end;
 
 procedure executa_jogada(x, y : integer;
@@ -153,25 +151,12 @@ begin
     end;
 end;
 
-procedure debug_imprime_tudo(var c: campo_minado);
-var i, j: integer;
-begin
-    for i := 1 to c.num_lin do
-    begin
-        for j := 1 to c.num_col do
-            write(c.tabuleiro[i,j].conteudo,' ');
-        writeln();
-    end;    
-end;
-
 var c   : campo_minado;
     x, y: integer;
 begin
     randomize;
     inicia_campo(c);
     imprime_campo(c);
-    debug_imprime_tudo(c);
-    writeln('debug: falta abrir ',c.falta_abrir);
     c.perdeu := false;
 
     while not((c.falta_abrir = 0) OR c.perdeu) do
@@ -179,8 +164,6 @@ begin
         le_jogada(x, y, c);
         executa_jogada(x, y, c);
         imprime_campo(c);
-        debug_imprime_tudo(c);
-        writeln('debug: falta abrir ',c.falta_abrir);
     end;
 
     if c.perdeu then
