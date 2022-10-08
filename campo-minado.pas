@@ -38,7 +38,7 @@ begin
         repeat
             randi := round(random(c.num_lin)) + 1;         (* os numeros aleatorios gerados devem ser 1 <= n <= numero de linhas ou de colunas *)
             randj := round(random(c.num_col)) + 1;
-        until(c.tabuleiro[randi,randj].conteudo <> MINA);  (* o repeat evita que a mina seja colocada em uma casa onde ja havia uma mina (otimizar isso depois)*)
+        until(c.tabuleiro[randi,randj].conteudo <> MINA);  (* o repeat evita que a mina seja colocada em uma casa onde ja havia uma mina (TODO: otimizar isso pra que seja possível escolher a densidade de minas no campo)*)
         c.tabuleiro[randi,randj].conteudo := MINA;
     end;
 end;
